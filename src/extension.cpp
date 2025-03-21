@@ -197,6 +197,28 @@ int CBaseEntityOutput::DeleteAllElements(void)
 	return Count;
 }
 
+const char* GetEntityName(CBaseEntity* pEntity)
+{
+	static char buffer[256];
+
+	datamap_t* pMap = gamehelpers->GetDataMap(pEntity);
+	if (pMap) {
+		typedescription_t* td = gamehelpers->FindInDataMap(pMap, "m_iName");
+		if (td) {
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset);
+#else
+			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset[TD_OFFSET_NORMAL]);
+#endif
+			if (name.ToCStr() && name.ToCStr()[0] != '\0')
+				return name.ToCStr();
+		}
+	}
+
+	snprintf(buffer, sizeof(buffer), "Entity #%d", gamehelpers->EntityToReference(pEntity));
+	return buffer;
+}
+
 inline int GetDataMapOffset(CBaseEntity *pEnt, const char *pName, typedescription_t **ppTypeDesc=NULL)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pEnt);
@@ -612,28 +634,6 @@ cell_t GetOutputNames(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return -1;
-}
-
-const char* GetEntityName(CBaseEntity* pEntity)
-{
-	static char buffer[256];
-
-	datamap_t* pMap = gamehelpers->GetDataMap(pEntity);
-	if (pMap) {
-		typedescription_t* td = gamehelpers->FindInDataMap(pMap, "m_iName");
-		if (td) {
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset);
-#else
-			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset[TD_OFFSET_NORMAL]);
-#endif
-			if (name.ToCStr() && name.ToCStr()[0] != '\0')
-				return name.ToCStr();
-		}
-	}
-
-	snprintf(buffer, sizeof(buffer), "Entity #%d", gamehelpers->EntityToReference(pEntity));
-	return buffer;
 }
 
 const sp_nativeinfo_t MyNatives[] =
