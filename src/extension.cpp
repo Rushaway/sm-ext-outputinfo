@@ -618,13 +618,19 @@ const char* GetEntityName(CBaseEntity* pEntity)
 {
 	static char buffer[256];
 
-	const char* pName = pEntity->GetEntityName();
-	if (pName && *pName)
-		return pName;
-
-	const char* pClassName = pEntity->GetClassname();
-	if (pClassName && *pClassName)
-		return pClassName;
+	datamap_t* pMap = gamehelpers->GetDataMap(pEntity);
+	if (pMap) {
+		typedescription_t* td = gamehelpers->FindInDataMap(pMap, "m_iName");
+		if (td) {
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset);
+#else
+			string_t name = *(string_t*)((uintptr_t)(pEntity) + td->fieldOffset[TD_OFFSET_NORMAL]);
+#endif
+			if (name.ToCStr() && name.ToCStr()[0] != '\0')
+				return name.ToCStr();
+		}
+	}
 
 	snprintf(buffer, sizeof(buffer), "Entity #%d", gamehelpers->EntityToReference(pEntity));
 	return buffer;
