@@ -398,7 +398,7 @@ cell_t GetOutputValue(IPluginContext *pContext, const cell_t *params)
 	case FIELD_BOOLEAN:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not an integer (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not an integer (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	return (cell_t)pEntityOutput->m_Value.iVal;
@@ -423,7 +423,7 @@ cell_t GetOutputValueFloat(IPluginContext *pContext, const cell_t *params)
 	case FIELD_TIME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	return sp_ftoc((cell_t)pEntityOutput->m_Value.flVal);
@@ -450,7 +450,8 @@ cell_t GetOutputValueString(IPluginContext *pContext, const cell_t *params)
 	case FIELD_SOUNDNAME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a string (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a string (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
+		
 	}
 
 	size_t len;
@@ -478,7 +479,7 @@ cell_t GetOutputValueVector(IPluginContext *pContext, const cell_t *params)
 	case FIELD_TIME:
 		break;
 	default:
-		return pContext->ThrowNativeError("%s value is not a float (%d)", pOutput, pEntityOutput->m_Value.fieldType);
+		return pContext->ThrowNativeError("Entity '%s': %s value is not a float (%d)", GetEntityName(pEntity), pOutput, pEntityOutput->m_Value.fieldType);
 	}
 
 	cell_t *vec;
@@ -611,6 +612,22 @@ cell_t GetOutputNames(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return -1;
+}
+
+const char* GetEntityName(CBaseEntity* pEntity)
+{
+	static char buffer[256];
+
+	const char* pName = pEntity->GetEntityName();
+	if (pName && *pName)
+		return pName;
+
+	const char* pClassName = pEntity->GetClassname();
+	if (pClassName && *pClassName)
+		return pClassName;
+
+	snprintf(buffer, sizeof(buffer), "Entity #%d", gamehelpers->EntityToReference(pEntity));
+	return buffer;
 }
 
 const sp_nativeinfo_t MyNatives[] =
